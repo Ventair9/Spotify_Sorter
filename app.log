@@ -1,0 +1,16 @@
+2024-09-13 12:28:28,368 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-09-13 12:28:28,368 - INFO - [33mPress CTRL+C to quit[0m
+2024-09-13 12:28:40,827 - INFO - 127.0.0.1 - - [13/Sep/2024 12:28:40] "[33mGET / HTTP/1.1[0m" 404 -
+2024-09-13 12:28:46,681 - INFO - 127.0.0.1 - - [13/Sep/2024 12:28:46] "[32mGET /login HTTP/1.1[0m" 302 -
+2024-09-13 12:28:48,918 - INFO - 127.0.0.1 - - [13/Sep/2024 12:28:48] "[32mGET /callback?code=AQDBkRbTavQJArDeNk-9IFxlcpWblC0w7LYX9kj6gFHytfTQGjHULG5ACKovwxWOCuIRurIl865UBwyg-QMw0w7VgahvGmjn3J--c0uBfGjKeMKOd6P_XV0VonbpPqBfJzb4j2P0hcNDnx0ThwWYrTlnjwZtXLS3EsC7mmHmqm8lemE9RtFDiLvQlPqjJrnLlE70lAg5oYprNALe2lbOUcCZ9MGF3OBW2omkuHHNkC5jMUWVDtRdYMU&state=rXRX7ca8I6mxYkGm HTTP/1.1[0m" 302 -
+2024-09-13 12:28:49,031 - INFO - 127.0.0.1 - - [13/Sep/2024 12:28:49] "GET /token HTTP/1.1" 200 -
+2024-09-13 12:28:54,734 - INFO - 127.0.0.1 - - [13/Sep/2024 12:28:54] "GET /json_dictionary HTTP/1.1" 200 -
+2024-09-13 12:31:30,681 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-09-13 12:31:30,681 - INFO - [33mPress CTRL+C to quit[0m
+2024-09-13 12:31:35,637 - INFO - 127.0.0.1 - - [13/Sep/2024 12:31:35] "[33mGET / HTTP/1.1[0m" 404 -
+2024-09-13 12:31:38,458 - INFO - 127.0.0.1 - - [13/Sep/2024 12:31:38] "[32mGET /login HTTP/1.1[0m" 302 -
+2024-09-13 12:31:41,718 - INFO - 127.0.0.1 - - [13/Sep/2024 12:31:41] "[32mGET /callback?code=AQCYuGj-qb41KmhxsFoWs-V3HI_X3zs0huihTIHk4jPqt3ebftAURt4qMlSEll4yghMiGX2ToMdnKvgnDP4shQW5iuQxTqc0xkE_-GkMtVhkeJYYjKG6zPacE2hn-AQ7ebCcA0pik-2WruWsIgA218C7ot-eaXRbM2gkujDzbCqzB3bHnuCuRqk8PPCGZyza3wWHBSTGahfKMPMSjA8k_d8GrZ14Pdi_W34jZ_BbZEDTIPyvatsiac8&state=fjLY7LSXEdvH9jI7 HTTP/1.1[0m" 302 -
+2024-09-13 12:31:41,795 - INFO - 127.0.0.1 - - [13/Sep/2024 12:31:41] "GET /token HTTP/1.1" 200 -
+2024-09-13 12:32:01,052 - INFO - 127.0.0.1 - - [13/Sep/2024 12:32:01] "GET /json_dictionary HTTP/1.1" 200 -
