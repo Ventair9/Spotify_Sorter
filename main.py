@@ -131,54 +131,6 @@ def artist_dictionary():
     return jsonify(dictionary)
 
 # lowkey the same function as above, repetitive code yada yada but i gotta fix this later for sure.
-    
-#i want to rewrite this function later on, but for now, getting the artist_ids and names to return the artists associated genres later
-def get_artist_id():
-    token = session.get("access_token")
-    track_url = "https://api.spotify.com/v1/me/tracks"
-    header = {"Authorization": "Bearer " + token}
-    limit = 50
-    offset = 0
-    artist_dictionary = {}
-
-    unique_artists = set()
-    while True:
-
-        params = {
-            "limit": limit,
-            "offset": offset
-        }
-        
-        response = requests.get(track_url, headers=header, params=params)
-
-        data = response.json()
-
-        for item in data["items"]:
-            tracks = item["tracks"]
-            artists = tracks["artists"]
-
-            for artist in artists:
-                artist_id = artist["id"]
-                artist_name = artist["name"]
-
-                if artist_id not in unique_artists:
-                    unique_artists.add(artist_id)
-                    artist_dictionary[artist_id] = artist_name
-
-        if data["next"] is None:
-            break
-
-        offset += limit
-
-    return artist_dictionary
-
-@app.route("/artist_dictionary")
-def artist_dictionary():
-    dictionary = get_artist_id()
-
-    return jsonify(dictionary)
-
-# lowkey the same function as above, repetitive code yada yada but i gotta fix this later for sure.
 def get_user_saved_track():
     
     token = session.get('access_token')
@@ -190,6 +142,8 @@ def get_user_saved_track():
     offset = 0
     track_dictionary = {}
     
+    artist_genres = get_artist()
+
     while True:
 
         params = {
@@ -204,21 +158,67 @@ def get_user_saved_track():
 
         for item in data['items']:
             track = item['track']
-            artists = track["tracks"]
+            track_name = track["name"]
+            first_artist = track["artists"][0]
+            artist_id = first_artist["id"]
 
-            for artist in artists:
-                artists = artist["artists"]
-                artist_name = artists["name"]
+            if artist_id not in track_dictionary:
+                artist_name = artist_genres.get(artist_id, {}).get("name", "Unknown Artist")
+                track_dictionary[artist_id] = {
+                    "artist_name": artist_name,
+                    "genres": artist_genres.get(artist_id, {}).get("genres", []),
+                    "songs": []
+                }
 
-            track_dictionary[track_id] = track_name
+            if track_name not in track_dictionary[artist_id]["songs"]:
+                track_dictionary[artist_id]["songs"].append(track_name)
 
-            if data['next'] is None:
-                break
+        if data['next'] is None:
+            break
 
 
-            offset += limit
+        offset += limit
 
-        return track_dictionary
+        final_dictionary = {}
+        for artist_id, info in track_dictionary.items():
+            final_dictionary[info["artist_name"]] = {
+                "genres": info["genres"],
+                "songs": info["songs"]
+            }
+
+    return final_dictionary
+
+@app.route("/final_dictionary", methods=["GET"])
+def final_dictionary():
+    final_dictionaryy = get_user_saved_track()
+
+    return jsonify(final_dictionaryy)
+
+def count_genres(artist_songs_dict):
+    genre_count = {}
+
+    for artist_data in artist_songs_dict.values():
+        genres = artist_data.get("genres", [])
+        
+        for genre in genres:
+            if genre in genre_count:
+                genre_count[genre] += 1
+            else:
+                genre_count[genre] = 1
+
+    return genre_count
+
+@app.route('/genre_counts', methods=['GET'])
+def genre_counts():
+
+    final_dictionary = get_user_saved_track()
+
+    genre_count = count_genres(final_dictionary)
+
+    sorted_genre_count = dict(sorted(genre_count.items(), key=lambda item: item[1], reverse=True))
+
+    return jsonify(sorted_genre_count)
+
 
 @app.route('/json_dictionary')
 def json_dictionary():
@@ -263,43 +263,7 @@ def genre_dictionaries():
     return jsonify(genre_dictionary)
 
     #function for getting the different song values and parameters
-    #function for getting the artist of the tracks
-def get_artist():
-    token = session.get("access_token")
-    url = "https://api.spotify.com/v1/artists/"
-    header = {"Authorization": "Bearer " + token}
 
-    test_dictionary = get_artist_id()
-    artist_ids = list(test_dictionary.keys())
-
-    artist_genres = {}
-
-    for i in range(0, len(artist_ids), 50):
-        artist_id_chunk = artist_ids[i:i+50]
-        artist_id_string = ",".join(artist_id_chunk)
-
-        response = requests.get(f"{url}?ids={artist_id_string}", headers=header)
-        artist_data = response.json()
-
-        for artist in artist_data["artists"]:
-            genres = artist.get("genres", [])
-            id = artist.get["id"]
-            name = artist.get["name"]
-
-            artist_genres[id] = {
-                "genres": genres,
-                "name": name
-            }
-    return artist_genres
-
-@app.route('/genre_dictionary')
-
-def genre_dictionaries():
-    genre_dictionary = get_artist()
-
-    return jsonify(genre_dictionary)
-
-    #function for getting the different song values and parameters
 def get_energy():
     token = session.get("access_token")
     audio_url = "https://api.spotify.com/v1/audio-features"
