@@ -28,6 +28,7 @@ def token_urlsafe(length):
     return "".join(secrets.choice(characters) for _ in range(length))
 #creating the login landing page for the user to login to spotify
 @app.route("/login")
+
 def login():
     state = token_urlsafe(16)
     scope = "user-read-private user-read-email user-library-read playlist-modify-public playlist-modify-private"
