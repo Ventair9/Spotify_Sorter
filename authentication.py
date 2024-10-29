@@ -68,6 +68,14 @@ class SpotifyAuth:
         final_dictionaryy = self.get_user_saved_track()
         return jsonify(final_dictionaryy)
 
+    def pass_dict(self):
+        genre_dictionary = self.get_user_saved_track()
+        genre_count = self.count_genres(genre_dictionary)
+        sorted_genre_count = sorted(genre_count.items(), key=lambda item: item[1], reverse=True)
+        sorted_list = [{"genre": genre, "count": count} for genre, count in sorted_genre_count]
+
+        return jsonify(sorted_list)
+
     def count_genres(self, artist_song_dict):
         genre_count = {}
 
@@ -80,10 +88,8 @@ class SpotifyAuth:
                 else:
                     genre_count[genre] = 1
         return genre_count
-    
-        
 
-    def json_dictionary(self):
+    def json_dictionaryy(self):
         track_dictionary = self.get_user_saved_track()
         return jsonify(track_dictionary)
 
@@ -108,6 +114,7 @@ class SpotifyAuth:
 
             for item in data["items"]:
                 track = item["track"]
+                track_id = track["id"]
                 track_name = track["name"]
                 first_artist = track["artists"][0]
                 artist_id = first_artist["id"]
@@ -117,12 +124,13 @@ class SpotifyAuth:
                     track_dictionary[artist_id] = {
                         "artist_name": artist_name,
                         "genres": artist_genres.get(artist_id, {}).get("genres", []),
-                        "songs": []
+                        "songs": [],
+                        "track_ids": []
                     }
 
                 if track_name not in track_dictionary[artist_id]["songs"]:
                     track_dictionary[artist_id]["songs"].append(track_name)
-
+                    track_dictionary[artist_id]["track_ids"].append(track_id)
             if data["next"] is None:
                 break
 
@@ -133,11 +141,20 @@ class SpotifyAuth:
         for artist_id, info in track_dictionary.items():
             final_dictionary[info["artist_name"]] = {
                 "genres": info["genres"],
-                "songs": info["songs"]
+                "songs": info["songs"],
+                "track_ids": info["track_ids"]
             }
 
         return final_dictionary
 
+    def get_track_id(self):
+        id_dictionary = self.get_user_saved_track()
+        track_ids = []
+
+        for artist_info in id_dictionary.values():
+            track_ids.extend(artist_info["track_ids"])
+        return track_ids
+    
     def get_artist_id(self):
         token = session.get("access_token")
         url = "https://api.spotify.com/v1/me/tracks"
@@ -207,4 +224,12 @@ class SpotifyAuth:
 
         return artist_genres
     
+    def get_genre_seeds(self):
+        token = session.get("access_token")
+        url = "https://api.spotify.com/v1/recommendations/available-genre-seeds"
+        headers = {"Authorization": "Bearer " + token}
 
+        response = requests.get(url, headers=headers)
+
+        genre_seeds = response.json().get("genres", [])
+        return jsonify(genre_seeds)

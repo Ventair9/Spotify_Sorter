@@ -1,9 +1,14 @@
 import requests
 from flask import session, jsonify
+from authentication import SpotifyAuth
+import logging
+
+#logging.basicConfig(level=logging.DEBUG)
 
 class PlaylistManager:
     def __init__(self, app):
         self.app = app
+        self.authentication = SpotifyAuth(app)
 
     def get_username(self):
         token = session.get("access_token")
@@ -25,7 +30,9 @@ class PlaylistManager:
             "Low energy, Low valence": dictionaries["low_energy_low_valence"],
             "Low energy, High valence": dictionaries["low_energy_high_valence"],
             "High energy, Low valence": dictionaries["high_energy_low_valence"],
-            "High energy, High valence": dictionaries["high_energy_high_valence"]
+            "High energy, High valence": dictionaries["girly"],
+            "Deutschrap": dictionaries["deutschrap"],
+            "Russian": dictionaries["russian"]
         }
         playlist_ids = {}
 
@@ -69,61 +76,70 @@ class PlaylistManager:
     def create_mood_playlists(self):
         user_id = self.get_username()
         track_features = self.get_energy()
-        dicitonaries = self.create_mood_dictionaries(track_features)
-        self.create_playlists(user_id, dicitonaries)
+        dictionaries = self.create_mood_dictionaries(track_features)
+        self.create_playlist(user_id, dictionaries)
         return jsonify({"status": "playlists created successfully"})
     
     def get_energy(self):
-        token = session.get("access_token")
-        audio_url = "https://api.spotify.com/v1/audio-features"
-        header = {"Authorization": "Bearer " + token}
+            token = session.get("access_token")
+            audio_url = "https://api.spotify.com/v1/audio-features"
+            header = {"Authorization": "Bearer " + token}
 
-        track_dictionary = self.get_user_saved_track()
-        track_ids = list(track_dictionary.keys())
+            track_ids = self.authentication.get_track_id()
+            
+            track_features = {}
 
-        track_features = {}
+            for i in range(0, len(track_ids), 100):
+                track_id_chunk = track_ids[i:i+100]
+                track_id_string = ",".join(track_id_chunk)
 
-        for i in range(0, len(track_ids), 100):
-            track_id_chunk = track_ids[i:i+100]
-            track_id_string = ",".join(track_id_chunk)
+                response = requests.get(f"{audio_url}?ids={track_id_string}", headers=header)
+                audio_features = response.json()
 
-            response = requests.get(f"{self.audio_url}?ids={track_id_string}", headers=header)
-            audio_features = response.json()
+                for track in audio_features.get("audio_features", []):
+                    if track:
+                        track_id = track["id"]
+                        energy = track["energy"]
+                        valence = track["valence"]
+                        tempo = track["tempo"]
+                        danceability = track["danceability"]
+                        speechiness = track["speechiness"]
+                        acousticness = track["acousticness"]
+                        mode = track["mode"]
+                        key = track["key"]
+                        instrumentalness = track["instrumentalness"]
 
-            for track in audio_features.get("audio_features", []):
-                if track:
-                    track_id = track["id"]
-                    energy = track["energy"]
-                    valence = track["valence"]
-                    tempo = track["tempo"]
-                    danceability = track["danceability"]
-                    speechiness = track["speechiness"]
-                    acousticness = track["acousticness"]
-                    mode = track["mode"]
-                    key = track["key"]
-                    instrumentalness = track["instrumentalness"]
-
-                    track_features[track_id] = {
-                        "valence": valence,
-                        "energy": energy,
-                        "tempo": tempo,
-                        "danceability": danceability,
-                        "speechiness": speechiness,
-                        "acousticness": acousticness,
-                        "mode": mode,
-                        "key": key,
-                        "instrumentalness": instrumentalness
-                    }
-        return track_features
-
-
+                        track_features[track_id] = {
+                            "valence": valence,
+                            "energy": energy,
+                            "tempo": tempo,
+                            "danceability": danceability,
+                            "speechiness": speechiness,
+                            "acousticness": acousticness,
+                            "mode": mode,
+                            "key": key,
+                            "instrumentalness": instrumentalness
+                        }
+            return track_features
+    
     def create_mood_dictionaries(self, track_features):
+
         dictionaries = {
             "low_energy_low_valence": {},
             "low_energy_high_valence": {},
             "girly": {},
-            "high_energy_low_valence": {}
+            "high_energy_low_valence": {},
+            "deutschrap": {},
+            "russian": {}
         }
+
+        final_dictionary = self.authentication.get_user_saved_track()
+        track_to_genres = {}
+        for artist_name, info in final_dictionary.items():
+            genres = info["genres"]
+            track_ids = info["track_ids"]
+            for track_id in track_ids:
+                track_to_genres[track_id] = genres
 
         for track_id, features in track_features.items():
             valence = features["valence"]
@@ -135,10 +151,15 @@ class PlaylistManager:
             acousticness = features["acousticness"]
             instrumentalness = features["instrumentalness"]
 
-            if valence <= 0.3 and energy <= 0.5 and danceability <0.75 and speechiness <= 0.12:
-                dictionaries["low_energy_low_valence"][track_id] = features
-            elif valence >= 0.7 and energy >= 0.6 and acousticness <= 0.6 and speechiness <= 0.1:
-                dictionaries["girly"][track_id] = features
+            track_genres = track_to_genres.get(track_id, [])
+            if any(genre.lower() in ["russian dance", "russian hip hop", "russian alt pop", "russian dance"] for genre in track_genres):
+                dictionaries["russian"][track_id] = features
+            # valence <= 0.3 and energy <= 0.5 and danceability <0.75 and speechiness <= 0.12:
+                 #dictionaries["low_energy_low_valence"][track_id] = features
+           # elif valence >= 0.7 and energy >= 0.6 and acousticness <= 0.6 and speechiness <= 0.1:
+              #  dictionaries["girly"][track_id] = features
+           # elif any(genre.lower() in ["german hip hop"] for genre in track_genres):
+               # dictionaries["deutschrap"][track_id] = features
         return dictionaries
 
     def valence_dictionary(self):
