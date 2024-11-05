@@ -32,7 +32,10 @@ class PlaylistManager:
             "High energy, Low valence": dictionaries["high_energy_low_valence"],
             "High energy, High valence": dictionaries["girly"],
             "Deutschrap": dictionaries["deutschrap"],
-            "Russian": dictionaries["russian"]
+            "Russian": dictionaries["russian"],
+            "Pop": dictionaries["pop"],
+            "KPop": dictionaries["kpop"],
+            "Depression": dictionaries["depression"]
         }
         playlist_ids = {}
 
@@ -130,7 +133,10 @@ class PlaylistManager:
             "girly": {},
             "high_energy_low_valence": {},
             "deutschrap": {},
-            "russian": {}
+            "russian": {},
+            "pop": {},
+            "kpop": {},
+            "depression": {}
         }
 
         final_dictionary = self.authentication.get_user_saved_track()
@@ -160,6 +166,12 @@ class PlaylistManager:
               #  dictionaries["girly"][track_id] = features
            # elif any(genre.lower() in ["german hip hop"] for genre in track_genres):
                # dictionaries["deutschrap"][track_id] = features
+           # elif any(genre.lower() in ["pop", "dance pop", "pop dance"] for genre in track_genres) and not any("k-pop" in genre.lower() for genre in track_genres) and valence >= 0.5:
+           #     dictionaries["pop"][track_id] = features
+         #   elif any(genre.lower() in ["k-pop"] for genre in track_genres):
+          #      dictionaries["kpop"][track_id] = features
+            elif valence <= 0.4 and instrumentalness <= 0.00:
+                dictionaries["depression"][track_id] = features
         return dictionaries
 
     def valence_dictionary(self):
