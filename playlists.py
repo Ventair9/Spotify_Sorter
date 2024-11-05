@@ -111,6 +111,7 @@ class PlaylistManager:
                         mode = track["mode"]
                         key = track["key"]
                         instrumentalness = track["instrumentalness"]
+                        loudness = track["loudness"]
 
                         track_features[track_id] = {
                             "valence": valence,
@@ -121,7 +122,8 @@ class PlaylistManager:
                             "acousticness": acousticness,
                             "mode": mode,
                             "key": key,
-                            "instrumentalness": instrumentalness
+                            "instrumentalness": instrumentalness,
+                            "loudness": loudness
                         }
             return track_features
     
@@ -170,7 +172,7 @@ class PlaylistManager:
            #     dictionaries["pop"][track_id] = features
          #   elif any(genre.lower() in ["k-pop"] for genre in track_genres):
           #      dictionaries["kpop"][track_id] = features
-            elif valence <= 0.4 and instrumentalness <= 0.00:
+            elif valence <= 0.4 and instrumentalness <= 0.00 and speechiness <= 0.055:
                 dictionaries["depression"][track_id] = features
         return dictionaries
 
