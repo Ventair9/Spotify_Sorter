@@ -2,16 +2,35 @@ from flask import Flask
 from authentication import SpotifyAuth
 from playlists import PlaylistManager
 import os
+from lyrics_analysis import lyricsAnalysis
 
 app = Flask(__name__)
 
 app.secret_key = os.getenv("SECRET_KEY")
 auth = SpotifyAuth(app)
 playlist_manager = PlaylistManager(app)
+lyrics = lyricsAnalysis(app)
 
 @app.route("/login") #check
 def  login():
     return auth.login()
+
+@app.route("/geniuslogin")
+def geniuslogin():
+    return lyrics.OAUTH2()
+
+@app.route("/geniuscallback")
+def geniuscallback():
+    return lyrics.callback()
+
+@app.route("/geniustoken")
+def geniustoken():
+    return lyrics.show_genius_token()
+
+@app.route("/create_depression_playlist", methods=["POST", "GET"])
+def create_depression_playlist():
+    result = lyrics.create_depression_playlist()
+    return result
 
 @app.route("/callback") # check
 def callback():

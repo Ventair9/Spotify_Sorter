@@ -8,3 +8,7 @@ class Config:
     CLIENT_ID = os.getenv("CLIENT_ID")
     CLIENT_SECRET = os.getenv("CLIENT_SECRET")
     REDIRECT_URI = "http://localhost:5000/callback"
+
+    GENIUS_ID = os.getenv("GENIUS_ID")
+    GENIUS_SECRET = os.getenv("GENIUS_SECRET")
+    GENIUS_URI = "http://localhost:5000/genius/callback"
