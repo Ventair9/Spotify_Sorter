@@ -76,5 +76,9 @@ def create_mood_playlists():
 def get_seeds():
     return auth.get_genre_seeds()
 
+@app.route("/create_it")
+def create_it():
+    return lyrics.create_depression_playlist()
+
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

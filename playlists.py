@@ -151,6 +151,7 @@ class PlaylistManager:
 
         final_dictionary = self.authentication.get_user_saved_track()
         track_to_genres = {}
+
         for artist_name, info in final_dictionary.items():
             genres = info["genres"]
             track_ids = info["track_ids"]
@@ -191,6 +192,7 @@ class PlaylistManager:
                 dictionaries["depression"][track_id] = features
           #  elif any(genre.lower() in ["soundtrack", "scorescore", "theme"] for genre in track_genres):
           #      dictionaries["soundtracks"][track_id] = features
+
         return dictionaries
 
     def valence_dictionary(self):
