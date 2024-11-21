@@ -12,3 +12,4 @@ class Config:
     GENIUS_ID = os.getenv("GENIUS_ID")
     GENIUS_SECRET = os.getenv("GENIUS_SECRET")
     GENIUS_URI = "http://localhost:5000/genius/callback"
+    GENIUS_TOKEN = os.getenv("GENIUS_TOKEN")

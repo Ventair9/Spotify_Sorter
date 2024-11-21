@@ -2,14 +2,14 @@ from flask import Flask
 from authentication import SpotifyAuth
 from playlists import PlaylistManager
 import os
-from lyrics_analysis import lyricsAnalysis
+from lyrics_analysis import LyricsAnalysis
 
 app = Flask(__name__)
 
 app.secret_key = os.getenv("SECRET_KEY")
 auth = SpotifyAuth(app)
 playlist_manager = PlaylistManager(app)
-lyrics = lyricsAnalysis(app)
+lyrics = LyricsAnalysis(app)
 
 @app.route("/login") #check
 def  login():

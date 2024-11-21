@@ -9,17 +9,20 @@ import string
 from playlists import PlaylistManager
 from authentication import SpotifyAuth
 from bs4 import BeautifulSoup
+import logging
 
-class lyricsAnalysis():
+class LyricsAnalysis():
     def __init__(self, app):
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
         self.app = app
         self.GENIUS_id = Config.GENIUS_ID
         self.GENIUS_secret = Config.GENIUS_SECRET
         self.GENIUS_uri = Config.GENIUS_URI
+        self.GENIUS_token = Config.GENIUS_TOKEN
         self.playlist_manager = PlaylistManager(app)
         self.authentication = SpotifyAuth(app)
         self.depression_candidates = {}
-
+    """
     def OAUTH2(self):
         state = self.token_urlsafe(16)
         scope = ""
@@ -58,12 +61,12 @@ class lyricsAnalysis():
         response = requests.post(token_request["url"], data=token_request["data"], headers=headers)
         json_response = response.json()
         print("genius api response", json_response)
-        session["genius_token"] = json_response["access_token"]
         return redirect("/geniustoken")
-    
+    """
+
     def show_genius_token(self):
-        token = session.get("genius_token")
-        return "Your access token is " + token
+        genius_token = self.GENIUS_token
+        return "Your access token is " + genius_token
     
     def token_urlsafe(self, length):
         return "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
@@ -75,7 +78,7 @@ class lyricsAnalysis():
             valence = features["valence"]
             instrumentalness = features["instrumentalness"]
 
-            if valence <= 0.4 and instrumentalness <= 0.00:
+            if valence <= 0.4 and instrumentalness <= 0.01:
 
                 for genre, tracks in final_dictionary.items():
                     for track_id, features in tracks.items():
@@ -92,18 +95,23 @@ class lyricsAnalysis():
                                 break
 
     def get_lyrics_for_depression_playlist(self):
-        token = session.get("genius_token")
+        genius_token = self.GENIUS_token
 
-        headers = {"Authorization": "Bearer " + token}
+        headers = {"Authorization": "Bearer " + genius_token}
 
         filtered_depression_songs = {}
 
+        logging.debug("The start of the end")
         for track_id, track_info in self.depression_candidates.items():
             search_query = f"{track_info["title"]} {track_info["artist"]}"
             search_url = f"https://api.genius.com/search?q{urllib.parse.quote(search_query)}"
             response = requests.get(search_url, headers=headers)
 
+            logging.debug(f"Search URL: {search_url}")
+            logging.debug(f"Search Response Status: {response.status_code}")
+
             if response.status_code == 200:
+                print(f"Error in search response: {response.text}")
                 search_results = response.json()
                 hits = search_results.get("response", {}).get("hits", [])
                 if hits:
@@ -128,14 +136,14 @@ class lyricsAnalysis():
                             
 
                     else:
-                        print("Error")
+                        logging.error("Error")
                 else:
-                    print("error")
+                    logging.warning("error")
             else:
-                print("errorr")
+                logging.error("errorr")
 
         return filtered_depression_songs
-
+    
     def analyze_lyrics(self, lyrics):
 
         analysis = TextBlob(lyrics)
@@ -158,5 +166,3 @@ class lyricsAnalysis():
 
         self.playlist_manager.create_playlist(user_id, dictionaries)
         return jsonify({"status": "playlists created successfully"})
-
-  

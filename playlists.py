@@ -188,7 +188,7 @@ class PlaylistManager:
            #     dictionaries["emo_rap"][track_id] =  features
             elif any(genre.lower() in ["rap", "west coast rap", "dirty south rap", "gangster rap"] for genre in track_genres):
                 dictionaries["gangster_rap"][track_id] = features
-            elif valence <= 0.4 and instrumentalness <= 0.00:
+            elif valence <= 0.4 and instrumentalness <= 0.01:
                 dictionaries["depression"][track_id] = features
           #  elif any(genre.lower() in ["soundtrack", "scorescore", "theme"] for genre in track_genres):
           #      dictionaries["soundtracks"][track_id] = features
