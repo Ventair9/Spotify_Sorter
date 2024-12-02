@@ -11,10 +11,12 @@ from authentication import SpotifyAuth
 from bs4 import BeautifulSoup
 import logging
 
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
 class LyricsAnalysis():
     def __init__(self, app):
-        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
         self.app = app
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.GENIUS_id = Config.GENIUS_ID
         self.GENIUS_secret = Config.GENIUS_SECRET
         self.GENIUS_uri = Config.GENIUS_URI
@@ -156,6 +158,7 @@ class LyricsAnalysis():
         track_features = self.playlist_manager.get_energy()
         final_dictionary = self.playlist_manager.create_mood_dictionaries(track_features)
         saved_tracks = self.authentication.get_user_saved_track()
+        logger.debug(f"Saved Tracks: {saved_tracks}")
         self.prepare_candidates(track_features, final_dictionary, saved_tracks)
 
         filtered_depression_songs = self.get_lyrics_for_depression_playlist()
