@@ -9,14 +9,11 @@ import string
 from playlists import PlaylistManager
 from authentication import SpotifyAuth
 from bs4 import BeautifulSoup
-import logging
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class LyricsAnalysis():
     def __init__(self, app):
         self.app = app
-        self.logger = logging.getLogger(self.__class__.__name__)
         self.GENIUS_id = Config.GENIUS_ID
         self.GENIUS_secret = Config.GENIUS_SECRET
         self.GENIUS_uri = Config.GENIUS_URI
@@ -102,51 +99,61 @@ class LyricsAnalysis():
         headers = {"Authorization": "Bearer " + genius_token}
 
         filtered_depression_songs = {}
+        print("The start of the end")
+        try:
+            for track_id, track_info in self.depression_candidates.items():
+                try:
+                    search_query = f"{track_info["title"]} {track_info["artist"]}"
+                    search_url = f"https://api.genius.com/search?q={urllib.parse.quote(search_query)}"
+                    print(f"Searching for: {search_query}")
+                    response = requests.get(search_url, headers=headers)
 
-        logging.debug("The start of the end")
-        for track_id, track_info in self.depression_candidates.items():
-            search_query = f"{track_info["title"]} {track_info["artist"]}"
-            search_url = f"https://api.genius.com/search?q{urllib.parse.quote(search_query)}"
-            response = requests.get(search_url, headers=headers)
+                    print(f"Search Response Status: {response.status_code}")
+                    print(f"Response Content: {response.text}")
 
-            logging.debug(f"Search URL: {search_url}")
-            logging.debug(f"Search Response Status: {response.status_code}")
+                    if response.status_code == 200:
+                        search_results = response.json()
+                        hits = search_results.get("response", {}).get("hits", [])
+                        if not hits:
+                            print(f"No hits found for {search_query}")
+                            continue
 
-            if response.status_code == 200:
-                print(f"Error in search response: {response.text}")
-                search_results = response.json()
-                hits = search_results.get("response", {}).get("hits", [])
-                if hits:
-                    song_id = hits[0]["result"]["id"]
-                    lyrics_url = f"https://api.genius.com/songs/{song_id}"
-                    lyrics_response = requests.get(lyrics_url, headers=headers)
+                        song_id = hits[0]["result"]["id"]
+                        lyrics_url = f"https://api.genius.com/songs/{song_id}"
+                        lyrics_response = requests.get(lyrics_url, headers=headers)
 
-                    if lyrics_response.status_code == 200:
-                        song_data = lyrics_response.json()
-                        lyrics_path = song_data["response"]["song"]["lyrics"]
-                        lyrics_url = f"https://genius.com{lyrics_path}"
+                        if lyrics_response.status_code == 200:
+                            song_data = lyrics_response.json()
+                            lyrics_path = song_data["response"]["song"]["lyrics"]
+                            lyrics_url = f"https://genius.com{lyrics_path}"
 
-                        lyrics_page = requests.get(lyrics_path)
-                        soup = BeautifulSoup(lyrics_page.content, "html.parser")
-                        lyrics = soup.find("div", class_="lyrics").get_text() if soup.find("div", class_="lyrics") else ""
+                            lyrics_page = requests.get(lyrics_path)
+                            soup = BeautifulSoup(lyrics_page.content, "html.parser")
+                            lyrics = soup.find("div", class_="lyrics").get_text() if soup.find("div", class_="lyrics") else ""
 
-                        sentiment_score = self.analyze_lyrics_sentiment(lyrics)
-                        print(f"Sentiment score for {track_info['title']} by {track_info['artist']}: {sentiment_score}")
+                            if lyrics:
+                                sentiment_score = self.analyze_lyrics(lyrics)
+                                print(f"Sentiment score for {track_info['title']} by {track_info['artist']}: {sentiment_score}")
 
-                        if sentiment_score <= -0.1:
-                            filtered_depression_songs[track_id] = track_info["features"]
-                            
+                                if sentiment_score <= -0.1:
+                                    filtered_depression_songs[track_id] = track_info["features"]
 
+                            else:
+                                print(f"No lyrics found for {search_query}")
+                        else:
+                            print(f"Failed to retrieve song data: {lyrics_response.status_code}")
                     else:
-                        logging.error("Error")
-                else:
-                    logging.warning("error")
-            else:
-                logging.error("errorr")
+                        print(f"Search request failed: {response.status_code}")
+
+                except Exception as track_error:
+                    print(f"Error processing track {track_id}: {track_error}")
+
+        except Exception as e:
+                print(f"Unexpected error in get_lyrics_for_depression_playlist: {e}")
 
         return filtered_depression_songs
     
-    def analyze_lyrics(self, lyrics):
+    def analyze_lyrics(self, lyrics):   
 
         analysis = TextBlob(lyrics)
 
@@ -157,8 +164,7 @@ class LyricsAnalysis():
         user_id = self.playlist_manager.get_username()
         track_features = self.playlist_manager.get_energy()
         final_dictionary = self.playlist_manager.create_mood_dictionaries(track_features)
-        saved_tracks = self.authentication.get_user_saved_track()
-        logger.debug(f"Saved Tracks: {saved_tracks}")
+        saved_tracks = self.authentication.get_user_saved_track() 
         self.prepare_candidates(track_features, final_dictionary, saved_tracks)
 
         filtered_depression_songs = self.get_lyrics_for_depression_playlist()
@@ -169,3 +175,4 @@ class LyricsAnalysis():
 
         self.playlist_manager.create_playlist(user_id, dictionaries)
         return jsonify({"status": "playlists created successfully"})
+    print("somoene fucking help me then")
