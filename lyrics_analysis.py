@@ -1,3 +1,4 @@
+"""
 from flask import session, request, jsonify, redirect
 import urllib.parse
 from textblob import TextBlob
@@ -10,7 +11,6 @@ from playlists import PlaylistManager
 from authentication import SpotifyAuth
 from bs4 import BeautifulSoup
 
-
 class LyricsAnalysis():
     def __init__(self, app):
         self.app = app
@@ -21,7 +21,7 @@ class LyricsAnalysis():
         self.playlist_manager = PlaylistManager(app)
         self.authentication = SpotifyAuth(app)
         self.depression_candidates = {}
-    """
+        
     def OAUTH2(self):
         state = self.token_urlsafe(16)
         scope = ""
@@ -61,7 +61,6 @@ class LyricsAnalysis():
         json_response = response.json()
         print("genius api response", json_response)
         return redirect("/geniustoken")
-    """
 
     def show_genius_token(self):
         genius_token = self.GENIUS_token
@@ -176,3 +175,4 @@ class LyricsAnalysis():
         self.playlist_manager.create_playlist(user_id, dictionaries)
         return jsonify({"status": "playlists created successfully"})
     print("somoene fucking help me then")
+    """

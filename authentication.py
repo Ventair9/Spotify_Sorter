@@ -6,6 +6,11 @@ import urllib.parse
 from config import Config
 import secrets
 import string
+import webbrowser
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class SpotifyAuth:
     def __init__(self, app):
@@ -150,7 +155,7 @@ class SpotifyAuth:
     def get_track_id(self):
         id_dictionary = self.get_user_saved_track()
         track_ids = []
-
+        logger.debug(f"id_dictionary: {id_dictionary}")
         for artist_info in id_dictionary.values():
             track_ids.extend(artist_info["track_ids"])
         return track_ids
