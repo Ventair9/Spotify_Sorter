@@ -161,7 +161,7 @@ class LyricsAnalysis():
 
     def create_depression_playlist(self):
         user_id = self.playlist_manager.get_username()
-        track_features = self.playlist_manager.get_energy()
+        track_features = self.playlist_manager.get_audio_features()
         final_dictionary = self.playlist_manager.create_mood_dictionaries(track_features)
         saved_tracks = self.authentication.get_user_saved_track() 
         self.prepare_candidates(track_features, final_dictionary, saved_tracks)

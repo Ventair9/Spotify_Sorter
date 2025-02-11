@@ -1,10 +1,7 @@
 import requests
 from flask import session, jsonify
 from authentication import SpotifyAuth
-import logging
 
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 class PlaylistManager:
     def __init__(self, app):
@@ -90,49 +87,51 @@ class PlaylistManager:
         self.create_playlist(user_id, dictionaries)
         return jsonify({"status": "playlists created successfully"})
     
-    def get_energy(self):
-            token = session.get("access_token")
-            audio_url = "https://api.spotify.com/v1/audio-features"
-            header = {"Authorization": "Bearer " + token}
+    def get_audio_features(self):
+        token = session.get("access_token")
+        print(token)
+        audio_url = "https://api.spotify.com/v1/audio-features"
+        header = {"Authorization": "Bearer " + token}
 
-            track_ids = self.authentication.get_track_id()
-            
-            track_features = {}
+        track_ids = self.authentication.get_track_id()
+        print(track_ids)
+        track_features = {}
 
-            for i in range(0, len(track_ids), 100):
-                track_id_chunk = track_ids[i:i+100]
-                track_id_string = ",".join(track_id_chunk)
+        for i in range(0, len(track_ids), 100):
+            track_id_chunk = track_ids[i:i+100]
+            track_id_string = ",".join(track_id_chunk)
+            response = requests.get(f"{audio_url}?ids={track_id_string}", headers=header)
+            print(response)
+            audio_features = response.json()
+            print(audio_features)
 
-                response = requests.get(f"{audio_url}?ids={track_id_string}", headers=header)
-                audio_features = response.json()
+            for track in audio_features.get("audio_features", []):
+                if track:
+                    track_id = track["id"]
+                    energy = track["energy"]
+                    valence = track["valence"]
+                    tempo = track["tempo"]
+                    danceability = track["danceability"]
+                    speechiness = track["speechiness"]
+                    acousticness = track["acousticness"]
+                    mode = track["mode"]
+                    key = track["key"]
+                    instrumentalness = track["instrumentalness"]
+                    loudness = track["loudness"]
 
-                for track in audio_features.get("audio_features", []):
-                    if track:
-                        track_id = track["id"]
-                        energy = track["energy"]
-                        valence = track["valence"]
-                        tempo = track["tempo"]
-                        danceability = track["danceability"]
-                        speechiness = track["speechiness"]
-                        acousticness = track["acousticness"]
-                        mode = track["mode"]
-                        key = track["key"]
-                        instrumentalness = track["instrumentalness"]
-                        loudness = track["loudness"]
-
-                        track_features[track_id] = {
-                            "valence": valence,
-                            "energy": energy,
-                            "tempo": tempo,
-                            "danceability": danceability,
-                            "speechiness": speechiness,
-                            "acousticness": acousticness,
-                            "mode": mode,
-                            "key": key,
-                            "instrumentalness": instrumentalness,
-                            "loudness": loudness
-                        }
-            return track_features
+                    track_features[track_id] = {
+                        "valence": valence,
+                        "energy": energy,
+                        "tempo": tempo,
+                        "danceability": danceability,
+                        "speechiness": speechiness,
+                        "acousticness": acousticness,
+                        "mode": mode,
+                        "key": key,
+                        "instrumentalness": instrumentalness,
+                        "loudness": loudness
+                    }
+        return track_features
     
     def create_mood_dictionaries(self, track_features):
 
@@ -199,11 +198,11 @@ class PlaylistManager:
         return dictionaries
 
     def valence_dictionary(self):
-        dictionary = self.get_energy()
+        dictionary = self.get_audio_features()
         return jsonify(dictionary)
 
     def mixed_dictionary(self):
-        mixed_dictionary = self.get_energy()
+        mixed_dictionary = self.get_audio_features()
         dictionaries = self.create_mood_dictionaries(mixed_dictionary)
 
         return jsonify(dictionaries)

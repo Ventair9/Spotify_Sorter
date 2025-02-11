@@ -10,7 +10,6 @@ app.secret_key = os.getenv("SECRET_KEY")
 auth = SpotifyAuth(app)
 playlist_manager = PlaylistManager(app)
 #lyrics = LyricsAnalysis(app)
-
 @app.route("/login") #check
 def  login():
     return auth.login()
@@ -62,6 +61,7 @@ def genre_dictionary():
 
 @app.route("/valence_dictionary") #  EMPTY RIGHT NOW DANGER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 def valence_dictionary():
+    print(playlist_manager.get_audio_features())
     return playlist_manager.valence_dictionary()
 
 @app.route("/mixed_dictionary") # EMPTY !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
